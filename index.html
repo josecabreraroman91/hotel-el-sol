@@ -1,0 +1,574 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Hotel El Sol · gestión</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0E1116; --bg2:#161B22; --card:#1B2029; --card2:#212836; --line:#2A3342;
+  --ink:#EEF2F7; --muted:#93A1B3; --muted2:#6B7789;
+  --rojo:#D4302A; --rojo2:#B21F1A; --rojo-soft:#2A1614;
+  --sol:#F6B301; --sol-d:#D69A00;
+  --ok:#37B26B; --ok-soft:rgba(55,178,107,.14);
+  --warn:#E0A32E; --bad:#D4483B; --info:#3D8BD4;
+  --r:15px; --r-s:11px;
+  --serif:"Fraunces",Georgia,serif; --slab:"Alfa Slab One",Georgia,serif;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px -14px rgba(0,0,0,.6);
+  --sidew:238px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans)}
+.num{font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+button{font:inherit;cursor:pointer}
+input,select,textarea{width:100%;font:inherit;font-size:15px;color:var(--ink);background:var(--bg2);
+  border:1px solid var(--line);border-radius:var(--r-s);padding:11px 12px;appearance:none;-webkit-appearance:none;transition:border-color .15s,box-shadow .15s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--rojo);box-shadow:0 0 0 3px rgba(212,48,42,.22)}
+::placeholder{color:var(--muted2)}
+label{display:block;font-size:10.5px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.field{margin-bottom:13px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.hint{font-size:12px;color:var(--muted);line-height:1.5}
+.btn{border:none;font-weight:700;padding:12px 16px;border-radius:var(--r-s);width:100%;transition:transform .12s,filter .15s;font-size:14.5px}
+.btn-rojo{background:linear-gradient(135deg,var(--rojo),var(--rojo2));color:#fff;box-shadow:0 6px 18px -8px rgba(212,48,42,.8)}
+.btn-sol{background:linear-gradient(135deg,var(--sol),var(--sol-d));color:#3a2b00}
+.btn-ok{background:linear-gradient(135deg,var(--ok),#2b8f54);color:#fff}
+.btn-ghost{background:var(--card2);color:var(--ink);border:1px solid var(--line)}
+.btn-ghost:hover{border-color:var(--muted2)}
+.btn-danger{background:transparent;color:var(--bad);border:1px solid rgba(212,72,59,.5)}
+.btn:hover{filter:brightness(1.06)}.btn:active{transform:scale(.98)}
+.btn-row{display:flex;gap:9px;margin:11px 0}
+.linkbtn{background:none;border:none;color:var(--sol);font-size:12.5px;font-weight:700;padding:2px 4px}
+.linkbtn.del{color:var(--bad)}
+
+/* ===== marca (cartel) ===== */
+.brand{display:flex;align-items:center;gap:11px}
+.placa{background:#fff;border-radius:10px;padding:7px 11px 7px 8px;display:flex;align-items:center;gap:8px;box-shadow:0 3px 12px rgba(0,0,0,.4);flex:0 0 auto}
+.placa .sun{width:22px;height:22px;flex:0 0 auto}
+.placa .txt{font-family:var(--slab);color:var(--rojo);font-size:15px;line-height:1;white-space:nowrap}
+.htit{min-width:0}
+.htit b{display:block;font-family:var(--serif);font-weight:600;font-size:15px;color:var(--ink)}
+.htit span{display:block;font-size:11px;color:var(--muted)}
+
+/* ===== estructura ===== */
+.shell{display:flex;min-height:100vh}
+.side{display:none}
+.topbar{position:sticky;top:0;z-index:40;background:linear-gradient(180deg,rgba(42,22,20,.6),rgba(14,17,22,.92));backdrop-filter:blur(12px);border-bottom:1px solid var(--line);padding:11px 15px}
+.htop{display:flex;align-items:center;gap:11px;justify-content:space-between}
+.content{flex:1;min-width:0;display:flex;flex-direction:column}
+main{padding:15px 15px 90px;max-width:1200px;margin:0 auto;width:100%}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);margin-bottom:11px;box-shadow:var(--shadow);overflow:hidden}
+.card.pad{padding:15px}
+.sectit{font-family:var(--serif);font-size:16px;font-weight:600;color:var(--ink);margin:20px 2px 10px;display:flex;align-items:center;gap:9px}
+.sectit .cnt{background:var(--card2);border:1px solid var(--line);color:var(--muted);border-radius:99px;padding:2px 9px;font-size:11px;font-family:var(--sans);font-weight:700}
+.empty{padding:28px 18px;text-align:center;color:var(--muted);font-size:13.5px}
+
+.botnav{position:fixed;bottom:0;left:0;right:0;z-index:50;background:rgba(22,27,34,.95);backdrop-filter:blur(14px);border-top:1px solid var(--line);display:flex;padding:6px 4px;padding-bottom:calc(6px + env(safe-area-inset-bottom))}
+.botnav button{flex:1;background:none;border:none;color:var(--muted);font-size:10px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 2px;border-radius:11px}
+.botnav button i{font-size:19px;font-style:normal;line-height:1}
+.botnav button.on{color:var(--sol)}
+
+/* ===== KPIs ===== */
+.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:11px;margin-bottom:4px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px 15px;box-shadow:var(--shadow)}
+.kpi .k{font-size:10.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted)}
+.kpi .v{font-family:var(--serif);font-size:24px;font-weight:600;margin-top:5px}
+.kpi .s{font-size:11.5px;color:var(--muted);margin-top:2px}
+
+/* ===== tablero de habitaciones ===== */
+.habgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:11px}
+.hab{border-radius:var(--r);border:1px solid var(--line);background:var(--card);overflow:hidden;cursor:pointer;transition:transform .12s,border-color .12s;position:relative}
+.hab:hover{transform:translateY(-2px)}
+.hab .top{height:7px}
+.hab.libre .top{background:var(--ok)} .hab.ocupada .top{background:var(--rojo)}
+.hab.reservada .top{background:var(--sol)} .hab.bloqueada .top{background:var(--muted2)}
+.hab .body{padding:12px 13px}
+.hab .n{font-family:var(--serif);font-weight:600;font-size:18px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.hab .tipo{font-size:11.5px;color:var(--muted);margin-top:1px}
+.hab .est{margin-top:9px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.pill{font-size:10.5px;font-weight:800;letter-spacing:.3px;padding:3px 9px;border-radius:99px;border:1px solid}
+.p-libre{color:var(--ok);border-color:rgba(55,178,107,.5);background:var(--ok-soft)}
+.p-ocupada{color:#ff8a80;border-color:rgba(212,48,42,.5);background:rgba(212,48,42,.14)}
+.p-reservada{color:var(--sol);border-color:rgba(246,179,1,.5);background:rgba(246,179,1,.12)}
+.p-bloqueada{color:var(--muted);border-color:var(--line);background:var(--card2)}
+.p-limp{color:var(--muted);border-color:var(--line);background:var(--card2)}
+.p-sucia{color:var(--warn);border-color:rgba(224,163,46,.5);background:rgba(224,163,46,.12)}
+.p-enlimpieza{color:var(--info);border-color:rgba(61,139,212,.5);background:rgba(61,139,212,.12)}
+.hab .info{margin-top:9px;font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:8px}
+.hab .info b{color:var(--ink);font-weight:700}
+
+/* filas simples (tarifas, hab config, historial) */
+.fila{display:flex;gap:11px;padding:12px 14px;border-bottom:1px solid var(--line);align-items:center}
+.fila:last-child{border-bottom:none}
+.fila .f1{flex:1;min-width:0}
+.fila .fname{font-weight:700;font-size:14.5px}
+.fila .fmeta{font-size:11.5px;color:var(--muted);margin-top:2px}
+.fila .fright{text-align:right;font-family:var(--serif);font-weight:600}
+
+/* modal */
+.ovl{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.72);backdrop-filter:blur(4px);display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--bg2);border:1px solid var(--line);border-radius:22px 22px 0 0;width:100%;max-width:560px;max-height:93vh;overflow-y:auto;padding:8px 17px calc(22px + env(safe-area-inset-bottom));box-shadow:var(--shadow)}
+.grab{width:40px;height:4px;background:var(--line);border-radius:99px;margin:6px auto 14px}
+.sheet h3{margin:0 0 6px;font-family:var(--serif);font-weight:600;font-size:20px}
+@media(min-width:700px){.ovl{align-items:center;padding:24px}.sheet{border-radius:20px}.grab{display:none}}
+
+.tabs{display:flex;gap:7px;overflow-x:auto;padding:2px 0 6px;margin-bottom:4px;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{background:var(--card2);border:1px solid var(--line);color:var(--muted);border-radius:99px;padding:8px 14px;font-size:12.5px;font-weight:700;white-space:nowrap;flex:0 0 auto}
+.tabs button.on{background:linear-gradient(135deg,var(--rojo),var(--rojo2));border-color:var(--rojo);color:#fff}
+
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:88px;z-index:99;background:linear-gradient(135deg,var(--sol),var(--sol-d));color:#3a2b00;font-weight:700;font-size:13.5px;padding:12px 20px;border-radius:13px;box-shadow:var(--shadow);opacity:0;transition:.25s;pointer-events:none;max-width:88%;text-align:center}
+.toast.on{opacity:1;bottom:98px}
+
+/* ===== escritorio ===== */
+@media(min-width:960px){
+  .side{display:flex;flex-direction:column;width:var(--sidew);flex:0 0 var(--sidew);position:sticky;top:0;height:100vh;padding:22px 16px;gap:6px;background:linear-gradient(180deg,rgba(42,22,20,.4),rgba(14,17,22,.2));border-right:1px solid var(--line)}
+  .side .brand{padding:2px 4px 14px}
+  .sidenav{display:flex;flex-direction:column;gap:3px;margin-top:6px}
+  .sidenav button{display:flex;align-items:center;gap:12px;background:none;border:none;color:var(--muted);font-size:14.5px;font-weight:600;padding:11px 13px;border-radius:12px;text-align:left;transition:.14s;position:relative}
+  .sidenav button i{font-size:17px;font-style:normal;width:20px;text-align:center}
+  .sidenav button:hover{background:var(--card);color:var(--ink)}
+  .sidenav button.on{background:linear-gradient(135deg,rgba(212,48,42,.32),rgba(212,48,42,.1));color:var(--ink)}
+  .sidenav button.on::before{content:"";position:absolute;left:0;top:9px;bottom:9px;width:3px;border-radius:0 3px 3px 0;background:var(--sol)}
+  .side .foot{margin-top:auto;padding-top:12px;border-top:1px solid var(--line);color:var(--muted);font-size:11.5px}
+  .topbar{display:none}.botnav{display:none}
+  main{padding:26px 30px 40px}
+  .habgrid{grid-template-columns:repeat(4,1fr);gap:13px}
+  .kpis{grid-template-columns:repeat(4,1fr);gap:13px}
+}
+@media(min-width:600px) and (max-width:959px){ .habgrid{grid-template-columns:repeat(3,1fr)} }
+
+/* ===== pantalla de acceso ===== */
+.gate{position:fixed;inset:0;z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:34px 22px;text-align:center;background:radial-gradient(120% 90% at 50% 0%,rgba(60,20,16,.5),rgba(10,12,16,.96) 70%)}
+.gate.oculto{display:none}
+.gate .placa{transform:scale(1.5);margin-bottom:26px}
+.gate-sub{font-size:12px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.gate-tag{font-family:var(--serif);font-size:16px;color:var(--ink);opacity:.9;margin:22px 0 26px}
+.gbtn{display:flex;align-items:center;justify-content:center;gap:11px;width:100%;max-width:320px;background:#fff;color:#1f1f1f;border:none;border-radius:13px;padding:14px 18px;font-size:15px;font-weight:600;cursor:pointer;box-shadow:0 10px 30px -12px rgba(0,0,0,.8)}
+.gbtn svg{width:20px;height:20px}
+.gate-msg{font-size:13.5px;color:var(--muted);line-height:1.6;max-width:320px;margin-bottom:8px}
+.gate-msg b{color:var(--ink)}
+.gate-mail{font-size:12.5px;color:var(--sol);margin-bottom:10px;word-break:break-all}
+.gate-foot{position:fixed;bottom:20px;left:0;right:0;text-align:center;font-size:11px;letter-spacing:1px;color:rgba(147,161,179,.5)}
+.gate-foot b{color:var(--sol)}
+.spin{width:34px;height:34px;border-radius:50%;border:3px solid rgba(246,179,1,.25);border-top-color:var(--sol);animation:spin 1s linear infinite;margin:0 auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+body.cargando .shell,body.cargando .botnav{visibility:hidden}
+</style>
+</head>
+<body class="cargando">
+
+<!-- ACCESO -->
+<div id="gate" class="gate">
+  <div class="placa"><span class="sun" id="gateSun"></span><span class="txt">HOTEL EL SOL</span></div>
+  <div class="gate-sub">Sistema de gestión</div>
+  <div id="gateBody"></div>
+  <div class="gate-foot">Un sistema de <b>orbepy</b></div>
+</div>
+
+<div class="shell">
+  <aside class="side">
+    <div class="brand"><div class="placa"><span class="sun js-sun"></span><span class="txt">HOTEL EL SOL</span></div></div>
+    <div class="sidenav">
+      <button data-nav="tablero" onclick="irA('tablero')"><i>▦</i><span>Tablero</span></button>
+      <button data-nav="historial" onclick="irA('historial')"><i>❯</i><span>Historial</span></button>
+      <button data-nav="ajustes" onclick="irA('ajustes')"><i>⚙</i><span>Ajustes</span></button>
+    </div>
+    <div class="foot"><span class="js-quien"></span></div>
+  </aside>
+  <div class="content">
+    <header class="topbar"><div class="htop">
+      <div class="brand"><div class="placa"><span class="sun js-sun"></span><span class="txt">HOTEL EL SOL</span></div></div>
+    </div></header>
+    <main id="app"></main>
+  </div>
+</div>
+
+<nav class="botnav">
+  <button data-nav="tablero" onclick="irA('tablero')"><i>▦</i>Tablero</button>
+  <button data-nav="historial" onclick="irA('historial')"><i>🧾</i>Historial</button>
+  <button data-nav="ajustes" onclick="irA('ajustes')"><i>⚙️</i>Ajustes</button>
+</nav>
+
+<div id="modal"></div>
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
+<script>
+/* =======================================================================
+   HOTEL EL SOL · sistema de gestión · v1
+   App de un solo archivo. Datos en Firebase (nodo /hotel), login Google,
+   accesos por correo (nodo /usuarios, modelo Academia DG/Temptress).
+   ======================================================================= */
+const FIREBASE_CONFIG={apiKey:"AIzaSyCf7J4persfgdOBLBJ15fPKGyloSDPEZjY",authDomain:"hotel-el-sol-b120f.firebaseapp.com",databaseURL:"https://hotel-el-sol-b120f-default-rtdb.firebaseio.com",projectId:"hotel-el-sol-b120f",storageBucket:"hotel-el-sol-b120f.firebasestorage.app",messagingSenderId:"1027711497327",appId:"1:1027711497327:web:7f66287c2d7964c935899a"};
+const SUPER_ADMIN="josecabreraroman91@gmail.com";
+const LSKEY="hotel_el_sol_v1";
+
+let S=null, vista='tablero';
+let usuario=null, rol=null, _fbReady=false, _saveTimer=null, _remoteApplying=false;
+let _fbAuth=null, _fbdbRef=null;
+const _fbdb=()=>_fbdbRef;
+
+/* ---------- utilidades ---------- */
+const $=id=>document.getElementById(id);
+const uid=()=>Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const gs=n=>{n=Math.round(Number(n)||0);return (n<0?'-':'')+Math.abs(n).toLocaleString('es-PY')+' Gs';}
+const num=v=>{const d=String(v==null?'':v).replace(/[^\d-]/g,'');const n=parseInt(d,10);return isFinite(n)?n:0;}
+const emailKey=e=>String(e||'').toLowerCase().replace(/[.#$\[\]]/g,',');
+const ahora=()=>Date.now();
+function fFecha(ts){ if(!ts)return '—'; const d=new Date(ts); const D=n=>String(n).padStart(2,'0'); return D(d.getDate())+'/'+D(d.getMonth()+1)+' '+D(d.getHours())+':'+D(d.getMinutes()); }
+function hace(ts){ if(!ts)return ''; let s=Math.floor((ahora()-ts)/1000); if(s<60)return 'recién'; let m=Math.floor(s/60); if(m<60)return 'hace '+m+' min'; let h=Math.floor(m/60); const mm=m%60; if(h<24)return 'hace '+h+'h'+(mm?' '+mm+'m':''); return 'hace '+Math.floor(h/24)+'d'; }
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),2300);}
+/* sol SVG */
+function svgSol(size,color){ let rays=''; const cx=size/2,cy=size/2,R=size*0.22,rl=size*0.36,n=12; for(let i=0;i<n;i++){const a=2*Math.PI*i/n,a2=a-0.14,a3=a+0.14; const bx=cx+Math.cos(a2)*R*1.02,by=cy+Math.sin(a2)*R*1.02,c2x=cx+Math.cos(a3)*R*1.02,c2y=cy+Math.sin(a3)*R*1.02,tx=cx+Math.cos(a)*rl,ty=cy+Math.sin(a)*rl; rays+='<polygon points="'+bx.toFixed(1)+','+by.toFixed(1)+' '+c2x.toFixed(1)+','+c2y.toFixed(1)+' '+tx.toFixed(1)+','+ty.toFixed(1)+'" fill="'+color+'"/>';} return '<svg width="'+size+'" height="'+size+'" viewBox="0 0 '+size+' '+size+'" xmlns="http://www.w3.org/2000/svg">'+rays+'<circle cx="'+cx+'" cy="'+cy+'" r="'+R+'" fill="'+color+'"/></svg>'; }
+
+/* ---------- estado inicial + semilla ---------- */
+function estadoInicial(){
+  return { hotel:{nombre:'Hotel El Sol', sub:'Sistema de gestión'},
+    habitaciones:[], tarifas:[], registros:[], historial:[], solicitudes:[] };
+}
+function esAdmin(){ return rol==='super' || rol==='admin'; }
+
+function sembrarDemo(){
+  S.tarifas=[
+    {id:uid(), nombre:'Turno 3 horas', tipo:'turno', horas:3, precio:60000},
+    {id:uid(), nombre:'Turno 6 horas', tipo:'turno', horas:6, precio:90000},
+    {id:uid(), nombre:'Noche completa', tipo:'noche', horas:0, precio:150000},
+    {id:uid(), nombre:'Día', tipo:'dia', horas:0, precio:200000}
+  ];
+  S.habitaciones=[];
+  for(let i=1;i<=8;i++) S.habitaciones.push({id:uid(), nombre:String(i), tipo:i<=6?'Estándar':'Suite', ocup:'libre', limp:'limpia', est:null});
+}
+
+/* ---------- guardar / nube ---------- */
+function save(){
+  try{ localStorage.setItem(LSKEY,JSON.stringify(S)); }catch(e){}
+  if(_remoteApplying) return;
+  if(_fbReady && rol){ clearTimeout(_saveTimer); _saveTimer=setTimeout(()=>{ try{_fbdb().ref('hotel').set(S);}catch(e){} }, 500); }
+}
+function logAccion(accion, detalle){
+  S.historial = S.historial||[];
+  S.historial.unshift({ ts:ahora(), usuario:(usuario&&usuario.email)||'—', nombre:(usuario&&usuario.displayName)||'', accion, detalle:detalle||'' });
+  if(S.historial.length>500) S.historial.length=500;
+}
+
+/* ---------- render ---------- */
+function irA(v){ vista=v; window.scrollTo(0,0); render(); }
+function render(){
+  document.querySelectorAll('[data-nav]').forEach(b=>b.classList.toggle('on',b.dataset.nav===vista));
+  document.querySelectorAll('.js-sun,#gateSun').forEach(e=>{ if(!e.innerHTML) e.innerHTML=svgSol(e.id==='gateSun'?30:22,'#F6B301'); });
+  document.querySelectorAll('.js-quien').forEach(e=>e.textContent=(usuario?usuario.email:'')+(rol?' · '+(ROL_LABEL[rol]||rol):''));
+  const m={tablero:vTablero, historial:vHistorial, ajustes:vAjustes};
+  $('app').innerHTML=(m[vista]||vTablero)();
+}
+
+/* ---------- helpers de datos ---------- */
+function tarifa(id){ return (S.tarifas||[]).find(t=>t.id===id); }
+function hab(id){ return (S.habitaciones||[]).find(h=>h.id===id); }
+const OCUP_LABEL={libre:'Libre', ocupada:'Ocupada', reservada:'Reservada', bloqueada:'Bloqueada'};
+const LIMP_LABEL={limpia:'Limpia', sucia:'Sucia', enlimpieza:'En limpieza'};
+const ROL_LABEL={super:'Súper admin', admin:'Administrador', empleado:'Recepción'};
+function esHoy(ts){ const d=new Date(ts),n=new Date(); return d.getFullYear()===n.getFullYear()&&d.getMonth()===n.getMonth()&&d.getDate()===n.getDate(); }
+
+/* ===================== TABLERO ===================== */
+function vTablero(){
+  const habs=S.habitaciones||[];
+  const libres=habs.filter(h=>h.ocup==='libre').length;
+  const ocup=habs.filter(h=>h.ocup==='ocupada').length;
+  const sucias=habs.filter(h=>h.limp==='sucia').length;
+  const ingHoy=(S.registros||[]).filter(r=>r.estado==='cerrada'&&esHoy(r.fin)).reduce((a,r)=>a+(r.monto||0),0);
+
+  let h='<div class="kpis">'+
+    '<div class="kpi"><div class="k">Libres</div><div class="v num" style="color:var(--ok)">'+libres+'</div><div class="s">de '+habs.length+' hab.</div></div>'+
+    '<div class="kpi"><div class="k">Ocupadas</div><div class="v num" style="color:#ff8a80">'+ocup+'</div><div class="s">ahora</div></div>'+
+    '<div class="kpi"><div class="k">Para limpiar</div><div class="v num" style="color:var(--warn)">'+sucias+'</div><div class="s">sucias</div></div>'+
+    '<div class="kpi"><div class="k">Ingresos hoy</div><div class="v num" style="color:var(--sol)">'+(ingHoy>=1000?Math.round(ingHoy/1000)+'K':ingHoy)+'</div><div class="s">'+gs(ingHoy)+'</div></div>'+
+    '</div>';
+
+  if(!habs.length){
+    h+='<div class="card empty"><p>Todavía no cargaste habitaciones.</p>'+(esAdmin()?'<button class="btn btn-rojo" style="max-width:260px;margin:10px auto 0" onclick="irA(\'ajustes\')">Configurar habitaciones</button>':'<div class="hint">Pedile al administrador que las cargue.</div>')+'</div>';
+    return h;
+  }
+  h+='<div class="sectit">Habitaciones <span class="cnt">'+habs.length+'</span></div><div class="habgrid">';
+  habs.forEach(x=>{
+    const est=x.est;
+    h+='<div class="hab '+x.ocup+'" onclick="abrirHab(\''+x.id+'\')">'+
+      '<div class="top"></div><div class="body">'+
+      '<div class="n">'+esc(x.nombre)+' <span class="pill p-'+x.ocup+'">'+OCUP_LABEL[x.ocup]+'</span></div>'+
+      '<div class="tipo">'+esc(x.tipo||'')+'</div>'+
+      '<div class="est"><span class="pill p-'+x.limp+'">'+LIMP_LABEL[x.limp]+'</span></div>'+
+      (x.ocup==='ocupada'&&est?'<div class="info"><b>'+esc(est.tarifaNombre||'')+'</b> · desde '+fFecha(est.inicio)+'<br>'+(est.huesped?esc(est.huesped)+' · ':'')+gs(est.monto)+'</div>':'')+
+      '</div></div>';
+  });
+  h+='</div>';
+  return h;
+}
+
+/* ---- ficha de habitación (check-in / check-out / limpieza) ---- */
+function abrirHab(id){
+  const x=hab(id); if(!x) return;
+  let h='<h3>Habitación '+esc(x.nombre)+' <span class="hint">· '+esc(x.tipo||'')+'</span></h3>';
+  h+='<div style="display:flex;gap:7px;margin:8px 0 14px"><span class="pill p-'+x.ocup+'">'+OCUP_LABEL[x.ocup]+'</span><span class="pill p-'+x.limp+'">'+LIMP_LABEL[x.limp]+'</span></div>';
+
+  if(x.ocup==='libre'){
+    if(x.limp==='sucia') h+='<div class="hint" style="color:var(--warn);margin-bottom:10px">⚠ Está sucia. Podés hacer check-in igual, pero conviene limpiarla.</div>';
+    const ts=S.tarifas||[];
+    if(!ts.length){ h+='<div class="empty">No hay perfiles de cobro. '+(esAdmin()?'Creá uno en Ajustes.':'Pedile al admin que los cargue.')+'</div>'; }
+    else{
+      h+='<label>Perfil de cobro</label><select id="ci_tar" class="field">'+ts.map(t=>'<option value="'+t.id+'">'+esc(t.nombre)+' — '+gs(t.precio)+'</option>').join('')+'</select>';
+      h+='<div class="field"><label>Huésped / vehículo (opcional)</label><input id="ci_hue" placeholder="Nombre o patente"></div>';
+      h+='<button class="btn btn-ok" onclick="checkIn(\''+id+'\')">✓ Check-in (ocupar)</button>';
+    }
+  } else if(x.ocup==='ocupada'){
+    const e=x.est||{};
+    h+='<div class="card pad" style="margin-bottom:12px"><div class="fmeta">Perfil</div><div class="fname">'+esc(e.tarifaNombre||'')+'</div>'+
+       '<div style="display:flex;justify-content:space-between;margin-top:8px"><div><div class="fmeta">Desde</div><div>'+fFecha(e.inicio)+' <span class="hint">('+hace(e.inicio)+')</span></div></div>'+
+       '<div style="text-align:right"><div class="fmeta">A cobrar</div><div class="fname" style="color:var(--sol);font-size:18px">'+gs(e.monto)+'</div></div></div>'+
+       (e.huesped?'<div class="fmeta" style="margin-top:8px">'+esc(e.huesped)+'</div>':'')+'</div>';
+    h+='<button class="btn btn-rojo" onclick="checkOut(\''+id+'\')">Check-out y cobrar '+gs(e.monto)+'</button>';
+    h+='<button class="btn btn-danger" style="margin-top:8px" onclick="pedirCancelar(\''+id+'\')">'+(esAdmin()?'Cancelar (anular sin cobrar)':'Solicitar cancelación al admin')+'</button>';
+  } else if(x.ocup==='bloqueada'){
+    h+='<div class="hint" style="margin-bottom:12px">Habitación bloqueada (fuera de servicio).</div>';
+    if(esAdmin()) h+='<button class="btn btn-ok" onclick="setOcup(\''+id+'\',\'libre\')">Desbloquear</button>';
+  }
+
+  /* limpieza */
+  h+='<div class="sectit" style="font-size:14px">Limpieza</div><div class="tabs">'+
+     ['limpia','sucia','enlimpieza'].map(l=>'<button class="'+(x.limp===l?'on':'')+'" onclick="setLimp(\''+id+'\',\''+l+'\')">'+LIMP_LABEL[l]+'</button>').join('')+'</div>';
+
+  if(esAdmin() && x.ocup!=='ocupada'){
+    h+='<button class="btn btn-ghost" style="margin-top:10px" onclick="setOcup(\''+id+'\',\''+(x.ocup==='bloqueada'?'libre':'bloqueada')+'\')">'+(x.ocup==='bloqueada'?'Desbloquear':'Bloquear (fuera de servicio)')+'</button>';
+  }
+  h+='<button class="btn btn-ghost" style="margin-top:8px" onclick="cerrarModal()">Cerrar</button>';
+  sheet(h);
+}
+function checkIn(id){
+  const x=hab(id); if(!x) return;
+  const t=tarifa($('ci_tar').value); if(!t){toast('Elegí un perfil');return;}
+  x.ocup='ocupada';
+  x.est={ id:uid(), tarifaId:t.id, tarifaNombre:t.nombre, precio:t.precio, monto:t.precio, inicio:ahora(), huesped:($('ci_hue').value||'').trim() };
+  logAccion('Check-in','Hab '+x.nombre+' · '+t.nombre+' · '+gs(t.precio)+(x.est.huesped?' · '+x.est.huesped:''));
+  save(); cerrarModal(); render(); toast('Check-in Hab '+x.nombre+' ✓');
+}
+function checkOut(id){
+  const x=hab(id); if(!x||!x.est) return;
+  const e=x.est;
+  S.registros=S.registros||[];
+  S.registros.unshift({ id:e.id, habId:id, habNombre:x.nombre, tarifa:e.tarifaNombre, inicio:e.inicio, fin:ahora(), monto:e.monto, huesped:e.huesped||'', empleado:(usuario&&usuario.email)||'', estado:'cerrada' });
+  logAccion('Check-out / cobro','Hab '+x.nombre+' · '+gs(e.monto));
+  x.ocup='libre'; x.limp='sucia'; x.est=null;
+  save(); cerrarModal(); render(); toast('Cobrado '+gs(e.monto)+' ✓');
+}
+function setLimp(id,l){ const x=hab(id); if(!x)return; x.limp=l; logAccion('Limpieza','Hab '+x.nombre+' → '+LIMP_LABEL[l]); save(); render(); abrirHab(id); }
+function setOcup(id,o){ const x=hab(id); if(!x)return; x.ocup=o; logAccion('Estado','Hab '+x.nombre+' → '+OCUP_LABEL[o]); save(); render(); abrirHab(id); }
+
+/* ---- cancelación: admin directo, empleado pide aprobación ---- */
+function pedirCancelar(id){
+  const x=hab(id); if(!x||!x.est)return;
+  if(esAdmin()){
+    if(!confirm('¿Anular la ocupación de la Hab '+x.nombre+' SIN cobrar?')) return;
+    logAccion('Cancelación (admin)','Hab '+x.nombre+' · anulada sin cobro · '+gs(x.est.monto));
+    x.ocup='libre'; x.limp='sucia'; x.est=null; save(); cerrarModal(); render(); toast('Anulada');
+  } else {
+    const motivo=(prompt('Motivo de la cancelación (lo revisa el admin):')||'').trim();
+    if(!motivo) return;
+    S.solicitudes=S.solicitudes||[];
+    S.solicitudes.unshift({ id:uid(), tipo:'cancelar-estancia', habId:id, habNombre:x.nombre, monto:x.est.monto, motivo, empleado:(usuario&&usuario.email)||'', ts:ahora(), estado:'pendiente' });
+    logAccion('Solicitud de cancelación','Hab '+x.nombre+' · '+motivo);
+    save(); cerrarModal(); render(); toast('Pedido enviado al admin');
+  }
+}
+function resolverSolicitud(sid,ok){
+  const s=(S.solicitudes||[]).find(z=>z.id===sid); if(!s)return;
+  if(!esAdmin()){toast('Solo el admin');return;}
+  if(ok && s.tipo==='cancelar-estancia'){
+    const x=hab(s.habId);
+    if(x && x.ocup==='ocupada'){ x.ocup='libre'; x.limp='sucia'; x.est=null; }
+    logAccion('Cancelación aprobada','Hab '+s.habNombre+' · pedida por '+s.empleado);
+  } else if(!ok){ logAccion('Solicitud rechazada','Hab '+s.habNombre); }
+  s.estado = ok?'aprobada':'rechazada'; s.resueltaPor=(usuario&&usuario.email)||''; s.resueltaTs=ahora();
+  save(); render(); toast(ok?'Aprobada ✓':'Rechazada');
+}
+
+/* ===================== HISTORIAL ===================== */
+function vHistorial(){
+  const pend=(S.solicitudes||[]).filter(s=>s.estado==='pendiente');
+  let h='';
+  if(esAdmin() && pend.length){
+    h+='<div class="sectit">⚠ Pedidos por aprobar <span class="cnt">'+pend.length+'</span></div><div class="card">';
+    pend.forEach(s=>{
+      h+='<div class="fila" style="flex-wrap:wrap"><div class="f1"><div class="fname">Cancelar Hab '+esc(s.habNombre)+' · '+gs(s.monto)+'</div>'+
+        '<div class="fmeta">'+esc(s.motivo)+' — '+esc(s.empleado)+' · '+hace(s.ts)+'</div></div>'+
+        '<div class="btn-row" style="margin:6px 0 0;width:100%"><button class="btn btn-ok" onclick="resolverSolicitud(\''+s.id+'\',true)">Aprobar</button>'+
+        '<button class="btn btn-danger" onclick="resolverSolicitud(\''+s.id+'\',false)">Rechazar</button></div></div>';
+    });
+    h+='</div>';
+  }
+  const hist=S.historial||[];
+  h+='<div class="sectit">Historial <span class="cnt">'+hist.length+'</span></div>';
+  if(!hist.length){ h+='<div class="card empty">Todavía no hay movimientos.</div>'; return h; }
+  h+='<div class="card">';
+  hist.slice(0,150).forEach(r=>{
+    h+='<div class="fila"><div class="f1"><div class="fname">'+esc(r.accion)+'</div>'+
+      '<div class="fmeta">'+esc(r.detalle||'')+'</div></div>'+
+      '<div style="text-align:right"><div class="fmeta">'+fFecha(r.ts)+'</div><div class="fmeta">'+esc((r.nombre||r.usuario||'').split('@')[0])+'</div></div></div>';
+  });
+  h+='</div>';
+  return h;
+}
+
+/* ===================== AJUSTES ===================== */
+function vAjustes(){
+  let h='';
+  if(esAdmin()){
+    /* Habitaciones */
+    h+='<div class="sectit">Habitaciones <span class="cnt">'+(S.habitaciones||[]).length+'</span></div><div class="card">';
+    (S.habitaciones||[]).forEach(x=>{
+      h+='<div class="fila"><div class="f1"><div class="fname">Hab '+esc(x.nombre)+'</div><div class="fmeta">'+esc(x.tipo||'')+' · '+OCUP_LABEL[x.ocup]+'</div></div>'+
+        '<button class="linkbtn del" onclick="borrarHab(\''+x.id+'\')">quitar</button></div>';
+    });
+    h+='<div class="fila"><input id="nh_nom" placeholder="N° / nombre" style="max-width:110px"><input id="nh_tipo" placeholder="Tipo (Estándar…)"><button class="btn btn-rojo" style="width:auto;padding:10px 14px" onclick="agregarHab()">+ Agregar</button></div>';
+    h+='</div>';
+
+    /* Perfiles de cobro */
+    h+='<div class="sectit">Perfiles de cobro <span class="cnt">'+(S.tarifas||[]).length+'</span></div>'+
+       '<div class="hint" style="margin:0 2px 8px">Creá los precios que quieras: por hora, turno, noche, día o semana.</div><div class="card">';
+    (S.tarifas||[]).forEach(t=>{
+      h+='<div class="fila"><div class="f1"><div class="fname">'+esc(t.nombre)+'</div><div class="fmeta">'+esc(TIPO_LABEL[t.tipo]||t.tipo)+(t.horas?' · '+t.horas+'h':'')+'</div></div>'+
+        '<div class="fright" style="color:var(--sol)">'+gs(t.precio)+'</div>'+
+        '<button class="linkbtn del" onclick="borrarTarifa(\''+t.id+'\')">quitar</button></div>';
+    });
+    h+='<div class="pad" style="border-top:1px solid var(--line)">'+
+       '<div class="row2"><div class="field"><label>Nombre</label><input id="nt_nom" placeholder="Ej: Turno 3 horas"></div>'+
+       '<div class="field"><label>Tipo</label><select id="nt_tipo"><option value="hora">Por hora</option><option value="turno" selected>Turno</option><option value="noche">Noche</option><option value="dia">Día</option><option value="semana">Semana</option></select></div></div>'+
+       '<div class="row2"><div class="field"><label>Horas (si es turno)</label><input id="nt_horas" inputmode="numeric" placeholder="Ej: 3"></div>'+
+       '<div class="field"><label>Precio (Gs)</label><input id="nt_precio" inputmode="numeric" placeholder="60000"></div></div>'+
+       '<button class="btn btn-rojo" onclick="agregarTarifa()">+ Agregar perfil</button></div>';
+    h+='</div>';
+
+    /* Accesos */
+    h+='<div class="sectit">Accesos</div><div class="card pad">'+
+      '<div class="hint" style="margin-bottom:10px">Cargá el correo de Google de quien puede entrar (recepción/admin).</div>'+
+      '<button class="btn btn-rojo" onclick="abrirAccesos()">👥 Usuarios y permisos</button></div>';
+  }
+
+  /* Cuenta (todos) */
+  h+='<div class="sectit">Cuenta</div><div class="card pad">'+
+    '<div class="hint" style="margin-bottom:10px">Sesión: <b style="color:var(--ink)">'+esc((usuario&&usuario.email)||'')+'</b> · '+esc(ROL_LABEL[rol]||rol||'')+'</div>'+
+    '<button class="btn btn-ghost" onclick="salir()">Cerrar sesión</button></div>';
+  if(esAdmin()) h+='<div class="card pad"><button class="btn btn-danger" onclick="cargarDemoConfirm()">Cargar habitaciones y precios de ejemplo</button></div>';
+  h+='<div class="hint" style="text-align:center;padding:14px 0 4px">Hotel El Sol · nube (Firebase) · un sistema de orbepy</div>';
+  return h;
+}
+const TIPO_LABEL={hora:'Por hora', turno:'Turno', noche:'Noche', dia:'Día', semana:'Semana'};
+function agregarHab(){ const n=($('nh_nom').value||'').trim(); if(!n){toast('Poné número/nombre');return;} S.habitaciones=S.habitaciones||[]; S.habitaciones.push({id:uid(),nombre:n,tipo:($('nh_tipo').value||'').trim()||'Estándar',ocup:'libre',limp:'limpia',est:null}); logAccion('Habitación creada','Hab '+n); save(); render(); }
+function borrarHab(id){ const x=hab(id); if(!x)return; if(x.ocup==='ocupada'){toast('Está ocupada');return;} if(!confirm('¿Quitar la Hab '+x.nombre+'?'))return; S.habitaciones=S.habitaciones.filter(h=>h.id!==id); logAccion('Habitación eliminada','Hab '+x.nombre); save(); render(); }
+function agregarTarifa(){ const n=($('nt_nom').value||'').trim(); const p=num($('nt_precio').value); if(!n){toast('Poné un nombre');return;} if(p<=0){toast('Poné el precio');return;} S.tarifas=S.tarifas||[]; S.tarifas.push({id:uid(),nombre:n,tipo:$('nt_tipo').value,horas:num($('nt_horas').value),precio:p}); logAccion('Perfil de cobro creado',n+' · '+gs(p)); save(); render(); }
+function borrarTarifa(id){ const t=tarifa(id); if(!t)return; if(!confirm('¿Quitar el perfil "'+t.nombre+'"?'))return; S.tarifas=S.tarifas.filter(x=>x.id!==id); logAccion('Perfil eliminado',t.nombre); save(); render(); }
+function cargarDemoConfirm(){ if((S.habitaciones||[]).length && !confirm('Esto agrega habitaciones y precios de ejemplo. ¿Seguir?'))return; sembrarDemo(); logAccion('Datos de ejemplo cargados',''); save(); render(); toast('Ejemplo cargado ✓'); }
+
+/* ===================== ACCESOS (solo super/admin) ===================== */
+const aCorreo=k=>String(k||'').replace(/,/g,'.');
+let _rolNuevo='empleado';
+function abrirAccesos(){
+  if(!esAdmin()){toast('Solo administradores');return;}
+  sheet('<h3>Accesos</h3><div class="hint" style="margin-bottom:12px">Solo estos correos de Google pueden entrar.</div>'+
+    '<div class="card pad"><div class="field"><label>Correo de Google</label><input id="nvMail" type="email" placeholder="correo@gmail.com"></div>'+
+    '<div class="field"><label>Nombre</label><input id="nvNom" placeholder="Ej: Carlos, recepción"></div>'+
+    '<label>Rol</label><div class="tabs" style="margin-bottom:12px"><button id="rEmp" class="on" onclick="_selRol(\'empleado\')">Recepción</button><button id="rAdm" onclick="_selRol(\'admin\')">Administrador</button></div>'+
+    '<div id="errNuevo" class="hint" style="color:var(--bad);margin-bottom:8px"></div>'+
+    '<button class="btn btn-rojo" onclick="agregarPorCorreo()">+ Dar acceso</button></div>'+
+    '<div id="accCont"><div class="spin" style="margin:20px auto"></div></div>'+
+    '<button class="btn btn-ghost" style="margin-top:12px" onclick="cerrarModal()">Cerrar</button>');
+  _rolNuevo='empleado'; listarAccesos();
+}
+function _selRol(r){ _rolNuevo=r; const a=$('rAdm'),e=$('rEmp'); if(a)a.classList.toggle('on',r==='admin'); if(e)e.classList.toggle('on',r==='empleado'); }
+function listarAccesos(){
+  _fbdb().ref('usuarios').get().then(snap=>{
+    const us=snap.exists()?snap.val():{}, ks=Object.keys(us);
+    let h='<div class="sectit" style="font-size:14px">Con acceso <span class="cnt">'+(ks.length+1)+'</span></div><div class="card">';
+    h+='<div class="fila"><div class="f1"><div class="fname">Vos</div><div class="fmeta">'+esc(SUPER_ADMIN)+'</div></div><span class="pill p-reservada">Súper admin</span></div>';
+    ks.forEach(k=>{ const f=us[k],act=f.activo===true;
+      h+='<div class="fila" style="flex-wrap:wrap;opacity:'+(act?'1':'.55')+'"><div class="f1"><div class="fname">'+esc(f.nombre||aCorreo(k))+'</div><div class="fmeta">'+esc(aCorreo(k))+' · '+esc(ROL_LABEL[f.rol]||f.rol)+(act?'':' · baja')+'</div></div>'+
+        '<div class="btn-row" style="margin:6px 0 0;width:100%"><button class="btn btn-ghost" onclick="cambiarRolU(\''+esc(k)+'\',\''+(f.rol==='admin'?'empleado':'admin')+'\')">A '+(f.rol==='admin'?'Recepción':'Admin')+'</button>'+
+        '<button class="btn btn-ghost" onclick="darBajaU(\''+esc(k)+'\','+(!act)+')">'+(act?'Baja':'Reactivar')+'</button>'+
+        '<button class="btn btn-danger" onclick="quitarU(\''+esc(k)+'\')">Eliminar</button></div></div>';
+    });
+    if(!ks.length) h+='<div class="empty" style="padding:14px">Todavía nadie más. Cargá un correo arriba.</div>';
+    h+='</div>'; const c=$('accCont'); if(c)c.innerHTML=h;
+  }).catch(e=>{ const c=$('accCont'); if(c)c.innerHTML='<div class="gate-msg">No se pudo leer. '+esc((e&&e.message)||'')+'</div>'; });
+}
+function agregarPorCorreo(){
+  const mail=($('nvMail').value||'').trim().toLowerCase(), nom=($('nvNom').value||'').trim(), er=$('errNuevo');
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail)){ er.textContent='Correo inválido.'; return; }
+  if(!nom){ er.textContent='Poné un nombre.'; return; } er.textContent='';
+  _fbdb().ref('usuarios/'+emailKey(mail)).set({nombre:nom,activo:true,rol:_rolNuevo,ts:ahora()})
+    .then(()=>{ toast('Acceso dado ✓'); $('nvMail').value='';$('nvNom').value=''; listarAccesos(); })
+    .catch(e=>{ er.textContent='No se pudo: '+((e&&e.message)||''); });
+}
+function cambiarRolU(k,r){ _fbdb().ref('usuarios/'+k+'/rol').set(r).then(()=>{toast('Rol actualizado');listarAccesos();}); }
+function darBajaU(k,a){ _fbdb().ref('usuarios/'+k+'/activo').set(!!a).then(()=>{toast(a?'Reactivado':'Baja');listarAccesos();}); }
+function quitarU(k){ if(!confirm('¿Eliminar este acceso?'))return; _fbdb().ref('usuarios/'+k).remove().then(()=>{toast('Eliminado');listarAccesos();}); }
+
+/* ===================== MODAL ===================== */
+function cerrarModal(){ $('modal').innerHTML=''; document.body.style.overflow=''; }
+function sheet(inner){ $('modal').innerHTML='<div class="ovl" onclick="if(event.target===this)cerrarModal()"><div class="sheet"><div class="grab"></div>'+inner+'</div></div>'; document.body.style.overflow='hidden'; }
+
+/* ===================== ACCESO Y NUBE ===================== */
+function gate(html){ $('gateBody').innerHTML=html; }
+function mostrarGate(){ $('gate').classList.remove('oculto'); document.body.classList.add('cargando'); }
+function ocultarGate(){ $('gate').classList.add('oculto'); document.body.classList.remove('cargando'); }
+function gateLogin(){ mostrarGate(); gate('<div class="gate-tag">Ingresá para entrar al sistema</div>'+
+  '<button class="gbtn" onclick="entrarGoogle()"><svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>Continuar con Google</button>'); }
+function gateCargando(t){ mostrarGate(); gate('<div class="spin"></div>'+(t?'<div class="gate-msg" style="margin-top:14px">'+esc(t)+'</div>':'')); }
+function gateSinAcceso(email){ mostrarGate(); gate('<div class="gate-msg"><b>Tu acceso no está habilitado.</b><br>Pedile al administrador que dé de alta este correo.</div><div class="gate-mail">'+esc(email)+'</div><button class="gbtn" style="max-width:220px;margin-top:8px" onclick="location.reload()">Reintentar</button><button class="linkbtn" onclick="salir()">Salir</button>'); }
+function gateError(m){ mostrarGate(); gate('<div class="gate-msg"><b>No se pudo iniciar sesión.</b><br>'+esc(m||'')+'</div><button class="gbtn" style="max-width:220px" onclick="entrarGoogle()">Reintentar</button>'); }
+function entrarGoogle(){ gateCargando('Conectando…'); const p=new firebase.auth.GoogleAuthProvider(); p.setCustomParameters({prompt:'select_account'}); _fbAuth.signInWithPopup(p).catch(err=>{ if(err&&err.code==='auth/popup-blocked'){_fbAuth.signInWithRedirect(p);return;} if(err&&(err.code==='auth/popup-closed-by-user'||err.code==='auth/cancelled-popup-request')){gateLogin();return;} gateError((err&&err.message)||'Error'); }); }
+function salir(){ if(_fbAuth)_fbAuth.signOut().then(()=>location.reload()); }
+function resolverRol(u){ if((u.email||'').toLowerCase()===SUPER_ADMIN) return Promise.resolve('super'); return _fbdb().ref('usuarios/'+emailKey(u.email)).get().then(s=>{ const f=s.val(); return (f&&f.activo===true)?(f.rol||'empleado'):null; }); }
+function arrancarApp(u){
+  usuario=u; gateCargando('Cargando…');
+  const ref=_fbdb().ref('hotel');
+  ref.get().then(snap=>{
+    if(snap.exists()) S=Object.assign(estadoInicial(),snap.val());
+    else { S=estadoInicial(); if(rol==='super') sembrarDemo(); }
+    _fbReady=true; try{localStorage.setItem(LSKEY,JSON.stringify(S));}catch(e){}
+    if(!snap.exists()) save();
+    ref.on('value',s2=>{ if(!s2.exists())return; const rem=JSON.stringify(s2.val()),loc=JSON.stringify(S); if(rem===loc)return; if($('modal').innerHTML.trim())return; _remoteApplying=true; S=Object.assign(estadoInicial(),s2.val()); try{localStorage.setItem(LSKEY,JSON.stringify(S));}catch(e){} render(); _remoteApplying=false; });
+    ocultarGate(); render();
+  }).catch(err=>gateError('No se pudo leer la base. '+((err&&err.message)||'')));
+}
+function iniciarFirebase(){
+  try{
+    firebase.initializeApp(FIREBASE_CONFIG); _fbAuth=firebase.auth(); _fbdbRef=firebase.database();
+    _fbAuth.onAuthStateChanged(function(u){
+      if(!u){ rol=null;usuario=null; gateLogin(); return; }
+      gateCargando('Verificando acceso…');
+      resolverRol(u).then(r=>{ if(r){rol=r;arrancarApp(u);} else {rol=null;gateSinAcceso(u.email||'');} }).catch(err=>gateError((err&&err.message)||'Error de permisos'));
+    });
+  }catch(e){ gateError('No se pudo iniciar Firebase. '+((e&&e.message)||'')); }
+}
+
+/* ===================== ARRANQUE ===================== */
+function boot(){
+  document.querySelectorAll('.js-sun').forEach(e=>e.innerHTML=svgSol(22,'#D4302A'));
+  $('gateSun').innerHTML=svgSol(30,'#D4302A');
+  gateCargando('');
+  if(window.firebase && firebase.initializeApp) iniciarFirebase();
+  else gateError('No cargó Firebase (revisá tu conexión).');
+}
+Object.assign(window,{irA,abrirHab,checkIn,checkOut,setLimp,setOcup,pedirCancelar,resolverSolicitud,
+  agregarHab,borrarHab,agregarTarifa,borrarTarifa,cargarDemoConfirm,abrirAccesos,_selRol,agregarPorCorreo,cambiarRolU,darBajaU,quitarU,
+  cerrarModal,entrarGoogle,salir});
+boot();
+</script>
+</body>
+</html>
