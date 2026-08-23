@@ -476,7 +476,16 @@ function vHistorial(){
   if(!hist.length){ h+='<div class="card empty">Todavía no hay movimientos.</div>'; return h; }
   h+='<div class="card">';
   hist.slice(0,150).forEach(r=>{ h+='<div class="fila"><div class="f1"><div class="fname">'+esc(r.accion)+'</div><div class="fmeta">'+esc(r.detalle||'')+'</div></div><div style="text-align:right"><div class="fmeta">'+fFecha(r.ts)+'</div><div class="fmeta">'+esc((r.nombre||r.usuario||'').split('@')[0])+'</div></div></div>'; });
-  h+='</div>'; return h;
+  h+='</div>';
+  if(rol==='super') h+='<div class="card pad"><div class="hint" style="margin-bottom:10px">Solo vos (súper administrador) podés borrar el historial, por si quedó algo mal cargado.</div><button class="btn btn-danger" onclick="borrarHistorial()">Borrar todo el historial</button></div>';
+  return h;
+}
+function borrarHistorial(){
+  if(rol!=='super'){ toast('Solo el súper administrador'); return; }
+  if(!confirm('¿Borrar TODO el historial? Esto no se puede deshacer.')) return;
+  if(!confirm('Última confirmación: se borran todos los movimientos registrados.')) return;
+  S.historial=[{ts:ahora(),usuario:(usuario&&usuario.email)||'',nombre:(usuario&&usuario.displayName)||'',accion:'Historial borrado',detalle:'por el súper administrador'}];
+  save(); render(); toast('Historial borrado');
 }
 
 /* ===== AJUSTES ===== */
@@ -497,7 +506,7 @@ function vAjustes(){
     h+='<div class="pad" style="border-top:1px solid var(--line)"><div class="row2"><div class="field"><label>Producto</label><input id="np_nom" placeholder="Ej: Agua 500ml"></div><div class="field"><label>Precio (Gs)</label><input id="np_precio" inputmode="numeric" oninput="miles(this)" placeholder="8.000"></div></div>'+
       '<div class="field"><label>Stock inicial</label><input id="np_stock" inputmode="numeric" placeholder="0"></div><button class="btn btn-rojo" onclick="agregarProducto()">+ Agregar producto</button></div></div>';
 
-    h+='<div class="sectit">Accesos</div><div class="card pad"><div class="hint" style="margin-bottom:10px">Cargá el correo de Google de quien puede entrar (recepción / admin).</div><button class="btn btn-rojo" onclick="abrirAccesos()">Usuarios y permisos</button></div>';
+    if(rol==='super') h+='<div class="sectit">Accesos</div><div class="card pad"><div class="hint" style="margin-bottom:10px">Cargá el correo de Google de quien puede entrar (recepción / admin).</div><button class="btn btn-rojo" onclick="abrirAccesos()">Usuarios y permisos</button></div>';
   }
   h+='<div class="sectit">Cuenta</div><div class="card pad"><div class="hint" style="margin-bottom:10px">Sesión: <b style="color:var(--ink)">'+esc((usuario&&usuario.email)||'')+'</b> · '+esc(ROL_LABEL[rol]||rol||'')+'</div><button class="btn btn-ghost" onclick="salir()">Cerrar sesión</button></div>';
   if(esAdmin()) h+='<div class="card pad"><button class="btn btn-ghost" onclick="cargarDemoConfirm()">Cargar habitaciones y precios de ejemplo</button></div>';
@@ -580,7 +589,7 @@ function boot(){ document.querySelectorAll('.js-sun').forEach(e=>e.innerHTML=svg
 Object.assign(window,{irA,abrirHab,checkIn,checkOut,marcarReserva,pedirCancelar,resolverSolicitud,
   addProd,qtyCarrito,vaciarCarrito,cobrarCantina,abrirCaja,cerrarCajaSheet,cerrarCaja,
   agregarHab,borrarHab,agregarTarifa,borrarTarifa,agregarProducto,editarProducto,borrarProducto,
-  cargarDemoConfirm,abrirAccesos,_selRol,agregarPorCorreo,cambiarRolU,darBajaU,quitarU,cerrarModal,entrarGoogle,salir,miles});
+  cargarDemoConfirm,borrarHistorial,abrirAccesos,_selRol,agregarPorCorreo,cambiarRolU,darBajaU,quitarU,cerrarModal,entrarGoogle,salir,miles});
 boot();
 </script>
 </body>
