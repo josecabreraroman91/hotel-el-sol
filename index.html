@@ -216,6 +216,8 @@ const uid=()=>Math.random().toString(36).slice(2,10)+Date.now().toString(36).sli
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const gs=n=>{n=Math.round(Number(n)||0);return (n<0?'-':'')+Math.abs(n).toLocaleString('es-PY')+' Gs';}
 const num=v=>{const d=String(v==null?'':v).replace(/[^\d-]/g,'');const n=parseInt(d,10);return isFinite(n)?n:0;}
+/* Va poniendo el punto de miles mientras se escribe (60000 -> 60.000). */
+function miles(el){ const d=el.value.replace(/\D/g,''); el.value = d ? parseInt(d,10).toLocaleString('es-PY') : ''; }
 const emailKey=e=>String(e||'').toLowerCase().replace(/[.#$\[\]]/g,',');
 const aCorreo=k=>String(k||'').replace(/,/g,'.');
 const ahora=()=>Date.now();
@@ -408,7 +410,7 @@ function vCaja(){
   let h='<div class="sectit">Caja</div>';
   if(!t){
     h+='<div class="card pad"><div class="hint" style="margin-bottom:12px">La caja está <b>cerrada</b>. Abrila al empezar el turno indicando con cuánto efectivo arrancás.</div>'+
-       '<div class="field"><label>Monto inicial en caja (Gs)</label><input id="cj_ini" inputmode="numeric" placeholder="0"></div>'+
+       '<div class="field"><label>Monto inicial en caja (Gs)</label><input id="cj_ini" inputmode="numeric" oninput="miles(this)" placeholder="0"></div>'+
        '<button class="btn btn-rojo" onclick="abrirCaja()">Abrir caja</button></div>';
   } else {
     const R=totalesTurno(t);
@@ -449,7 +451,7 @@ function cerrarCajaSheet(){
     '<div class="field"><label>¿Cuánto efectivo hay realmente en la caja?</label><input id="cj_fin" inputmode="numeric" placeholder="Contá la plata y ponela"></div>'+
     '<div id="cj_dif" class="hint" style="margin-bottom:10px"></div>'+
     '<button class="btn btn-rojo" onclick="cerrarCaja()">Confirmar cierre</button><button class="btn btn-ghost" style="margin-top:8px" onclick="cerrarModal()">Cancelar</button>');
-  const inp=$('cj_fin'); if(inp) inp.addEventListener('input',()=>{ const f=num(inp.value); const d=f-R.esperado; $('cj_dif').innerHTML=inp.value===''?'':('Diferencia: <b style="color:'+(d===0?'var(--ok)':(d>0?'var(--ok)':'var(--ocup)'))+'">'+(d>0?'+':'')+gs(d)+'</b> '+(d===0?'(cuadra perfecto)':(d>0?'(sobra)':'(falta)'))); });
+  const inp=$('cj_fin'); if(inp) inp.addEventListener('input',()=>{ miles(inp); const f=num(inp.value); const d=f-R.esperado; $('cj_dif').innerHTML=inp.value===''?'':('Diferencia: <b style="color:'+(d===0?'var(--ok)':(d>0?'var(--ok)':'var(--ocup)'))+'">'+(d>0?'+':'')+gs(d)+'</b> '+(d===0?'(cuadra perfecto)':(d>0?'(sobra)':'(falta)'))); });
 }
 function cerrarCaja(){
   const t=cajaAbierta(); if(!t)return; const R=totalesTurno(t); const fin=num($('cj_fin').value);
@@ -487,12 +489,12 @@ function vAjustes(){
     h+='<div class="sectit">Perfiles de cobro <span class="cnt">'+(S.tarifas||[]).length+'</span></div><div class="hint" style="margin:0 2px 8px">Creá los precios que quieras: por hora, turno, noche, día o semana.</div><div class="card">';
     (S.tarifas||[]).forEach(t=>{ h+='<div class="fila"><div class="f1"><div class="fname">'+esc(t.nombre)+'</div><div class="fmeta">'+esc(TIPO_LABEL[t.tipo]||t.tipo)+(t.horas?' · '+t.horas+'h':'')+'</div></div><div class="fright">'+gs(t.precio)+'</div><button class="linkbtn del" onclick="borrarTarifa(\''+t.id+'\')">quitar</button></div>'; });
     h+='<div class="pad" style="border-top:1px solid var(--line)"><div class="row2"><div class="field"><label>Nombre</label><input id="nt_nom" placeholder="Ej: Turno 3 horas"></div><div class="field"><label>Tipo</label><select id="nt_tipo"><option value="hora">Por hora</option><option value="turno" selected>Turno</option><option value="noche">Noche</option><option value="dia">Día</option><option value="semana">Semana</option></select></div></div>'+
-      '<div class="row2"><div class="field"><label>Horas (si es turno)</label><input id="nt_horas" inputmode="numeric" placeholder="3"></div><div class="field"><label>Precio (Gs)</label><input id="nt_precio" inputmode="numeric" placeholder="60000"></div></div><button class="btn btn-rojo" onclick="agregarTarifa()">+ Agregar perfil</button></div></div>';
+      '<div class="row2"><div class="field"><label>Horas (si es turno)</label><input id="nt_horas" inputmode="numeric" placeholder="3"></div><div class="field"><label>Precio (Gs)</label><input id="nt_precio" inputmode="numeric" oninput="miles(this)" placeholder="60.000"></div></div><button class="btn btn-rojo" onclick="agregarTarifa()">+ Agregar perfil</button></div></div>';
     /* Productos de cantina */
     h+='<div class="sectit">Productos de la cantina <span class="cnt">'+(S.productos||[]).length+'</span></div><div class="card">';
     (S.productos||[]).forEach(p=>{ h+='<div class="fila"><div class="f1"><div class="fname">'+esc(p.nombre)+'</div><div class="fmeta">Stock: '+(p.stock||0)+'</div></div><div class="fright">'+gs(p.precio)+'</div>'+
       '<button class="linkbtn" onclick="editarProducto(\''+p.id+'\')">editar</button><button class="linkbtn del" onclick="borrarProducto(\''+p.id+'\')">quitar</button></div>'; });
-    h+='<div class="pad" style="border-top:1px solid var(--line)"><div class="row2"><div class="field"><label>Producto</label><input id="np_nom" placeholder="Ej: Agua 500ml"></div><div class="field"><label>Precio (Gs)</label><input id="np_precio" inputmode="numeric" placeholder="8000"></div></div>'+
+    h+='<div class="pad" style="border-top:1px solid var(--line)"><div class="row2"><div class="field"><label>Producto</label><input id="np_nom" placeholder="Ej: Agua 500ml"></div><div class="field"><label>Precio (Gs)</label><input id="np_precio" inputmode="numeric" oninput="miles(this)" placeholder="8.000"></div></div>'+
       '<div class="field"><label>Stock inicial</label><input id="np_stock" inputmode="numeric" placeholder="0"></div><button class="btn btn-rojo" onclick="agregarProducto()">+ Agregar producto</button></div></div>';
 
     h+='<div class="sectit">Accesos</div><div class="card pad"><div class="hint" style="margin-bottom:10px">Cargá el correo de Google de quien puede entrar (recepción / admin).</div><button class="btn btn-rojo" onclick="abrirAccesos()">Usuarios y permisos</button></div>';
@@ -578,7 +580,7 @@ function boot(){ document.querySelectorAll('.js-sun').forEach(e=>e.innerHTML=svg
 Object.assign(window,{irA,abrirHab,checkIn,checkOut,marcarReserva,pedirCancelar,resolverSolicitud,
   addProd,qtyCarrito,vaciarCarrito,cobrarCantina,abrirCaja,cerrarCajaSheet,cerrarCaja,
   agregarHab,borrarHab,agregarTarifa,borrarTarifa,agregarProducto,editarProducto,borrarProducto,
-  cargarDemoConfirm,abrirAccesos,_selRol,agregarPorCorreo,cambiarRolU,darBajaU,quitarU,cerrarModal,entrarGoogle,salir});
+  cargarDemoConfirm,abrirAccesos,_selRol,agregarPorCorreo,cambiarRolU,darBajaU,quitarU,cerrarModal,entrarGoogle,salir,miles});
 boot();
 </script>
 </body>
